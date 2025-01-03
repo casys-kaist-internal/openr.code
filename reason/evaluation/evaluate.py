@@ -169,6 +169,21 @@ if __name__ == "__main__":
         print("Method: {}. Average result: {}".format(method_name, avg_res))
         return results
 
+    def evaluate_single_request(
+        method_name: str, solver_fn: Callable, save_dir: Optional[Path] = None
+    ) -> Dict[str, Any]:
+        test_ds = task.test_ds
+
+        # Select the first request
+        problem_inst = test_ds[10]
+        print(f"Evaluating single request: {problem_inst['question']}")
+
+        # Solve the problem instance
+        output = solver_fn(problem_inst, llm_gen_fn, rm_call)
+
+        print(f"Result: {output.solutions}")
+        return output
+    
     solver_fns = {"cot": cot, "best_of_n": best_of_n}
 
     cfg_dict_record = dict()
@@ -235,4 +250,5 @@ if __name__ == "__main__":
     else:
         save_dir = None
 
-    parallel_evaluate_test_dataset(config.method, solver_fn, save_dir)
+    # parallel_evaluate_test_dataset(config.method, solver_fn, save_dir)
+    evaluate_single_request(config.method, solver_fn, save_dir)
