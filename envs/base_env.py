@@ -160,6 +160,7 @@ class CoTEnv(BaseEnv):
         # update legal actions
         if not (terminated or truncated) and update_legal_action:
             cnt = 0
+            # TODO(hmchoi) : What does this 3 means??
             while cnt < 3:
                 cnt += 1
                 try:
@@ -208,16 +209,23 @@ class CoTEnv(BaseEnv):
         finish_reason_list = []
         next_state_terminated = {}
 
+        # print(f"================== Legal Action Start ==================")
         for i in range(len(texts)):
             # XXX: this process can be improve or moved to other place
             # this is a pre-judge of terminal flag or certain action, by
             # whether the text-generation is stop by the <eos> or stop_str
             
+            # print(f"self.sep {repr(self.sep)}")
+            # print(f"texts[i] {repr(texts[i])}")
             terminated = not texts[i].endswith(self.sep)
-
+            # print(f"terminated {terminated}")
+            
+            # DISCRIPTION(hmchoi) : For MATH task, it append "ки\n" if action doesn't ends with "ки\n"
             processed_act = self.post_process_act(texts[i])
+            # print(f"post processed act {repr(processed_act)}")
             if (
                 len(processed_act) > 0
+                # DISCRIPTION(hmchoi) : delete duplicated generated prompt
                 and processed_act not in text_list
                 # only stop is valid, otherwise the output action is truncated actually
                 and result.finish_reason[i] == "stop" 
@@ -250,6 +258,8 @@ class CoTEnv(BaseEnv):
             )
         ]
 
+        # print(f"length of legal actions {len(_legal_actions)}\nlegal actions {_legal_actions}")
+        # print(f"completion tokens {result.completion_tokens}")
         self._next_state_terminated = next_state_terminated
         return _legal_actions, result.completion_tokens
 
@@ -273,11 +283,14 @@ class CoTEnv(BaseEnv):
         info = {"winner": 0}
         # done when reaches maximum length or LLM generates stop words
         if self.stop_str is not None and self.stop_str in self.action_history[-1]:
+            # print(f"stop str in self.action_history[-1]")
             terminated = True
         elif self._next_state_terminated[self.action_history[-1]]:
+            # print("output ends with invalid str")
             terminated = True
         elif self.sep not in self.action_history[-1]:
             # This is because the output is stopped by eos
+            # print("output stopped by eos")
             terminated = True
         else: terminated = False
 

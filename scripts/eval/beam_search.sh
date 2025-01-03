@@ -4,9 +4,9 @@ python reason/evaluation/evaluate.py \
     --task_name MATH \
     --temperature 0.7 \
     --max_new_tokens 2048 \
-    --num_sequence 3 \
+    --num_sequence 5 \
     --tree_max_width 4 \
-    --tree_max_depth 50 \
+    --tree_max_depth 15 \
     --save_dir debug \
     --method beam_search \
     --num_worker 32 \

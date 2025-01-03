@@ -44,7 +44,8 @@ class VLLMRemoteCaller(LanguageModelCallingFunction):
             top_k=config.top_k,
             max_new_tokens=config.max_new_tokens,
             stop_token_ids=config.stop_token_ids,
-            stop_str=config.stop_str,
+            # lm_step_tag를 제대로 인식시키기 위하여 lm_step_tag를 stop_str에 추가
+            stop_str=self.lm_step_tag,
             controller_addr=self.controller_addr,
             include_stop_str_in_output=config.include_stop_str_in_output,
         )

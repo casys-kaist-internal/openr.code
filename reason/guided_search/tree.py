@@ -423,7 +423,9 @@ class SearchTree:
             reward_model_fn: The reward model function to evaluate the state.
         """
         api_call_completion_tokens = 0
+        logger.info("========== initial reset ==========")
         _, info = simulate_env.reset(update_legal_action=True)
+        logger.info("========== initial reset ends ==========")
         api_call_completion_tokens += info["api_completion_token"]
         if self.root is None:
             root = LanguageNode(text_state=simulate_env.get_state())
@@ -433,7 +435,8 @@ class SearchTree:
         end_nodes, top_k_nodes = [], [(-root._initial_value, root, simulate_env.copy())]
         k = beam_size
 
-        for _ in range(max_step + 1):
+        for step in range(max_step + 1):
+            logger.info(f"============================ Step {step} ============================")
             cur_nodes_to_search = top_k_nodes
             top_k_nodes = []
             for cur_neg_v, cur_node, cur_env in cur_nodes_to_search:
@@ -460,12 +463,15 @@ class SearchTree:
             # nsmallest since we negate the value
             top_k_nodes = heapq.nsmallest(k, top_k_nodes)
 
+            logger.info(f"number of top k nodes {len(top_k_nodes)}")
             # expand selected nodes
             # XXX(ziyu): this could be optimized by batch expand
             for value, node, new_env in top_k_nodes:
-                _, _, terminated, truncated, info = new_env.step(
+                logger.info(f"============================ new node ============================")
+                state, _, terminated, truncated, info = new_env.step(
                     node.last_action, update_legal_action=True
                 )
+                logger.info(f"last action : {repr(node.last_action)}, terminated {terminated}")
                 api_call_completion_tokens += info["api_completion_token"]
                 if terminated or truncated:
                     node.set_as_terminate_node()

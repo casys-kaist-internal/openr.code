@@ -9,7 +9,7 @@ from reason.inference.rm_call import (
     RewardModelBaseConfig,
     RemoteRewardModelConfig,
 )
-from reason.evaluation.evaluator import SolutionOutput, Task, RemoteMathEvaluator
+from reason.evaluation.evaluator import SolutionOutput, Task, RemoteMathEvaluator, MathEvaluator
 import torch
 from functools import partial
 import json
@@ -84,6 +84,7 @@ if __name__ == "__main__":
     else:
         lm_step_tag = "ки\n"
 
+    print(f"lm_step_tag {repr(lm_step_tag)}")
     llm_gen_fn = VLLMRemoteCaller(
         config.LM, config.controller_addr, lm_step_tag=lm_step_tag
     )
@@ -177,11 +178,12 @@ if __name__ == "__main__":
         # Select the first request
         problem_inst = test_ds[10]
         print(f"Evaluating single request: {problem_inst['question']}")
-
+        
         # Solve the problem instance
-        output = solver_fn(problem_inst, llm_gen_fn, rm_call)
+        # output = solver_fn(problem_inst, llm_gen_fn, rm_call)
+        output = MathEvaluator(config.task_name, llm_gen_fn, rm_call).evaluate_problem(problem_inst, solver_fn)
 
-        print(f"Result: {output.solutions}")
+        print(f"Result: {output}")
         return output
     
     solver_fns = {"cot": cot, "best_of_n": best_of_n}

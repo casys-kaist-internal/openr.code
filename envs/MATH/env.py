@@ -9,7 +9,7 @@ from .parse_utils_qwen import extract_answer as extract_fn, parse_ground_truth
 from .grader import math_equal
 
 ANS_RE = None 
-STOP_STR = None
+STOP_STR = "The answer is:"
 
 
 def extract_answer(answer_str: str) -> str:
@@ -57,8 +57,11 @@ class Env(CoTEnv):
 
     def post_process_act(self, action: str):
         if not action.endswith(self.sep):
-            action = action.strip() + self.sep
-        
+            # 최종 답안을 처리할 수 있도록 함. -> temp solution for MATH task
+            if "The answer is:" in action:
+                action = action.strip() + "\n"
+            else:
+                action = action.strip() + self.sep
         return action
 
     def _is_correct(self, completion):
